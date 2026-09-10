@@ -34,10 +34,30 @@ function isEditable(element) {
     (tag === 'input' && ['text', 'search', 'email', 'url', 'tel'].includes(element.type));
 }
 
+// Resolve the true editable element for an event. Composed input events that
+// originate inside a Shadow DOM retarget to the shadow host, so e.target is
+// wrong there — composedPath() gives the actual inner field.
+function eventElement(e) {
+  const path = e.composedPath ? e.composedPath() : [];
+  const innermost = path[0];
+  if (innermost && innermost.nodeType === Node.ELEMENT_NODE && isEditable(innermost)) {
+    return innermost;
+  }
+  return e.target;
+}
+
+// For fields inside a Shadow DOM, the selection lives on the shadow root
+// (ShadowRoot.getSelection), not on the document.
+function selectionFor(element) {
+  const root = element.getRootNode();
+  if (root && typeof root.getSelection === 'function') return root.getSelection();
+  return window.getSelection();
+}
+
 // Get text before the caret in an editable element
 function textBeforeCaret(element) {
   if (element.isContentEditable) {
-    const sel = window.getSelection();
+    const sel = selectionFor(element);
     if (!sel || sel.rangeCount === 0) return '';
     const range = sel.getRangeAt(0);
     const node = range.startContainer;
@@ -64,7 +84,7 @@ function performExpansion(element, match) {
   const { snippet, markerLen } = match;
 
   if (element.isContentEditable) {
-    const sel = window.getSelection();
+    const sel = selectionFor(element);
     if (!sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
     const startNode = range.startContainer;
@@ -107,7 +127,7 @@ function performExpansion(element, match) {
 // Called after text changes; expands a recognized shortcut if present
 // The setTimeout lets the pending keystroke register before we act.
 document.addEventListener('input', (e) => {
-  const element = e.target;
+  const element = eventElement(e);
   if (!isEditable(element)) return;
 
   setTimeout(async () => {
