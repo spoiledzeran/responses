@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Foundever Responses",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Canned responses for customer service agents. Insert prewritten replies with keyboard shortcuts.",
   "permissions": [
     "storage",
@@ -24,7 +24,8 @@
     {
       "matches": ["<all_urls>"],
       "js": ["content/content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": true
     }
   ],
   "background": {
