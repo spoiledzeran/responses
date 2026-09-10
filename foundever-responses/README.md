@@ -1,4 +1,4 @@
-# Foundever Responses
+# Responses
 
 A Chrome extension for customer service agents to insert prewritten, formatted canned responses using keyboard shortcuts. Built for the Foundever pitch.
 
